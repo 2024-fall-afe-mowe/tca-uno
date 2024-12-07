@@ -1,4 +1,3 @@
-// src/GameResults.tsx
 import React from 'react';
 import { GameResult } from './game-results';
 
@@ -18,8 +17,8 @@ const GameResults: React.FC<GameResultsProps> = ({ results }) => {
                         <li key={index} className="mb-2">
                             <p><strong>Winner:</strong> {result.winner}</p>
                             <p><strong>Players:</strong> {result.players.join(', ')}</p>
-                            <p><strong>Start Time:</strong> {new Date(result.startTime).toLocaleString()}</p>
-                            <p><strong>End Time:</strong> {new Date(result.endTime).toLocaleString()}</p>
+                            <p><strong>Start Time:</strong> {result.startTime ? new Date(result.startTime).toLocaleString() : 'N/A'}</p>
+                            <p><strong>End Time:</strong> {result.endTime ? new Date(result.endTime).toLocaleString() : 'N/A'}</p>
                         </li>
                     ))}
                 </ul>

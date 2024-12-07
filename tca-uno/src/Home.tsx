@@ -1,8 +1,12 @@
-// src/Home.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LeaderboardEntry } from './game-results';
 
-export const Home = () => {
+interface HomeProps {
+    leaderboardData: LeaderboardEntry[];
+}
+
+export const Home: React.FC<HomeProps> = ({ leaderboardData }) => {
     const nav = useNavigate();
 
     return (
@@ -14,12 +18,35 @@ export const Home = () => {
             >
                 Play
             </button>
-            <button
-                className="btn btn-secondary mb-3"
-                onClick={() => nav('/results')}
-            >
-                View Game Results
-            </button>
+            <div className="card bg-base-100 shadow-xl">
+                <div className="card-body p-3">
+                    <h2 className="card-title">Leaderboard</h2>
+                    {leaderboardData.length > 0 ? (
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>W</th>
+                                    <th>L</th>
+                                    <th>AVG</th>
+                                    <th>Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {leaderboardData.map((entry) => (
+                                    <tr key={entry.name}>
+                                        <td>{entry.wins}</td>
+                                        <td>{entry.losses}</td>
+                                        <td>{entry.avg}</td>
+                                        <td>{entry.name}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p>Play a game to see the leaderboard!</p>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

@@ -1,11 +1,10 @@
-// src/App.tsx
 import React, { useState } from 'react';
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import { Home } from './Home';
 import { Setup } from './Setup';
 import { Play } from './Play';
 import GameResults from './GameResults';
-import { GameResult } from './game-results';
+import { GameResult, getLeaderboard } from './game-results';
 
 const dummyGameResults: GameResult[] = [
     {
@@ -22,19 +21,32 @@ const dummyGameResults: GameResult[] = [
     },
 ];
 
-const myRouter = createHashRouter([
-    { path: '/', element: <Home /> },
-    { path: '/setup', element: <Setup /> },
-    { path: '/play', element: <Play /> },
-    { path: '/results', element: <GameResults results={dummyGameResults} /> },
-]);
-
 const App: React.FC = () => {
     const [gameResults, setGameResults] = useState<GameResult[]>(dummyGameResults);
 
-    const addGameResult = (newResult: GameResult) => {
+    // Add a new game result
+    const addNewGameResult = (newResult: GameResult) => {
         setGameResults([...gameResults, newResult]);
     };
+
+    const myRouter = createHashRouter([
+        {
+            path: '/',
+            element: <Home leaderboardData={getLeaderboard(gameResults)} />,
+        },
+        {
+            path: '/setup',
+            element: <Setup />,
+        },
+        {
+            path: '/play',
+            element: <Play addNewGameResult={addNewGameResult} />,
+        },
+        {
+            path: '/results',
+            element: <GameResults results={gameResults} />,
+        },
+    ]);
 
     return (
         <div className="App p-3">
