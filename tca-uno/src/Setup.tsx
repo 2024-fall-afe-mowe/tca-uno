@@ -1,121 +1,72 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface Player {
-    name: string;
-    selected: boolean;
-}
+import { Player } from './App';
 
 interface SetupProps {
-    setPlayersForGame: (players: Player[]) => void;
+  players: Player[];
+  setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
 }
 
-export const Setup: React.FC<SetupProps> = ({ setPlayersForGame }) => {
-    const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
-    const [newPlayerName, setNewPlayerName] = useState('');
-    const validationDialogRef = useRef<HTMLDialogElement | null>(null);
-    const nav = useNavigate();
+const Setup: React.FC<SetupProps> = ({ players, setPlayers }) => {
+  const [playerName, setPlayerName] = useState('');
+  const navigate = useNavigate();
 
-    const addPlayer = () => {
-        if (
-            newPlayerName.length === 0 || 
-            availablePlayers.some(player => player.name.toLowerCase() === newPlayerName.toLowerCase())
-        ) {
-            validationDialogRef.current?.showModal();
-            return;
-        }
+  const addPlayer = () => {
+    const trimmedName = playerName.trim();
+    if (trimmedName !== '') {
+      setPlayers((prev) => [...prev, { name: trimmedName, selected: true }]);
+      setPlayerName('');
+    }
+  };
 
-        setAvailablePlayers(prevPlayers => [
-            ...prevPlayers,
-            { name: newPlayerName, selected: false }
-        ]);
-        setNewPlayerName('');
-    };
+  const togglePlayerSelected = (index: number) => {
+    setPlayers((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], selected: !updated[index].selected };
+      return updated;
+    });
+  };
 
-    const togglePlayerSelection = (playerName: string) => {
-        setAvailablePlayers(prevPlayers =>
-            prevPlayers.map(player =>
-                player.name === playerName
-                    ? { ...player, selected: !player.selected }
-                    : player
-            )
-        );
-    };
+  const startGame = () => {
+    if (players.some(p => p.selected)) {
+      navigate('/play');
+    } else {
+      alert('Select at least one player to start the game.');
+    }
+  };
 
-    const startGame = () => {
-        const selectedPlayers = availablePlayers.filter(player => player.selected);
-        if (selectedPlayers.length < 2) {
-            validationDialogRef.current?.showModal();
-            return;
-        }
-        setPlayersForGame(selectedPlayers);
-        nav('/play');
-    };
+  return (
+    <div className="p-5">
+      <h1 className="text-3xl font-bold mb-5">Setup</h1>
+      <div className="mb-4">
+        <input
+          type="text"
+          className="input input-bordered mr-2"
+          placeholder="Enter player name"
+          value={playerName}
+          onChange={(e) => setPlayerName(e.target.value)}
+        />
+        <button className="btn btn-primary" onClick={addPlayer}>Add Player</button>
+      </div>
 
-    return (
-        <div className="setup-container">
-            <h1 className="text-2xl font-bold mb-3">Setup</h1>
-            <div className="flex mb-3">
-                <input
-                    type="text"
-                    placeholder="Enter player name"
-                    className="input input-bordered flex-1"
-                    value={newPlayerName}
-                    onChange={e => setNewPlayerName(e.target.value)}
-                />
-                <button className="btn btn-primary ml-2" onClick={addPlayer}>
-                    Add Player
-                </button>
-            </div>
+      {players.length > 0 && (
+        <ul className="mb-4 space-y-2">
+          {players.map((p, i) => (
+            <li key={i} className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                checked={p.selected}
+                onChange={() => togglePlayerSelected(i)}
+              />
+              <span>{p.name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
-            <ul>
-                {availablePlayers.map(player => (
-                    <li key={player.name} className="flex items-center mb-2">
-                        <label className="cursor-pointer flex-1">
-                            <input
-                                type="checkbox"
-                                className="checkbox mr-2"
-                                checked={player.selected}
-                                onChange={() => togglePlayerSelection(player.name)}
-                            />
-                            {player.name}
-                        </label>
-                    </li>
-                ))}
-            </ul>
-
-            <button
-                className="btn btn-success mt-3 w-full"
-                onClick={startGame}
-            >
-                Start Game
-            </button>
-
-            <dialog ref={validationDialogRef} className="modal">
-                <div className="modal-box">
-                    <form method="dialog">
-                        <button
-                            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                        >
-                            ✕
-                        </button>
-                    </form>
-                    <h3 className="font-bold text-lg">
-                        {
-                            availablePlayers.length < 2
-                                ? 'Not enough players selected!'
-                                : 'Duplicate or empty player name!'
-                        }
-                    </h3>
-                    <p className="py-4">
-                        {
-                            availablePlayers.length < 2
-                                ? 'Please select at least two players to start the game.'
-                                : 'Enter a unique name for each player.'
-                        }
-                    </p>
-                </div>
-            </dialog>
-        </div>
-    );
+      <button className="btn btn-success" onClick={startGame}>Start Game</button>
+    </div>
+  );
 };
+
+export default Setup;

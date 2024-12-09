@@ -1,46 +1,63 @@
-export type GameResult = {
+export interface GameResult {
     startTime: string;
     endTime: string;
     winner: string;
     players: string[];
-};
+    reverseCount: number;
+    unoDeclarations: { [key: string]: number };
+}
 
-export type LeaderboardEntry = {
+export interface LeaderboardEntry {
+    name: string;
     wins: number;
     losses: number;
-    avg: string; // Average win percentage as a formatted string
-    name: string; // Player's name
-};
+    avg: string;
+}
 
-// Main function to generate leaderboard
-export const getLeaderboard = (results: GameResult[]): LeaderboardEntry[] => {
-    return getPreviousPlayers(results)
-        .map((player) => getLeaderboardEntry(results, player))
-        .sort(
-            (a, b) =>
-                parseFloat(b.avg) * 1000 + b.wins + b.losses -
-                (parseFloat(a.avg) * 1000 + a.wins + a.losses)
-        );
-};
+export interface FunFacts {
+    totalGames: number;
+    totalReverses: number;
+    totalUnoDeclarations: number;
+    averageReversesPerGame: number;
+    averageUnoDeclarationsPerGame: number;
+    highestReversesInGame: number;
+    highestUnoDeclarationsInGame: number;
+}
 
-// Helper function to extract unique players
-const getPreviousPlayers = (results: GameResult[]): string[] => {
-    const allPlayers = results.flatMap((game) => game.players);
-    return Array.from(new Set(allPlayers)).sort((a, b) => a.localeCompare(b));
-};
+export function getLeaderboard(gameResults: GameResult[]): LeaderboardEntry[] {
+    const previousPlayers = Array.from(new Set(gameResults.flatMap((result) => result.players)));
+    return previousPlayers.map((player) => {
+        const gamesPlayed = gameResults.filter((result) => result.players.includes(player));
+        const wins = gamesPlayed.filter((result) => result.winner === player).length;
+        const losses = gamesPlayed.length - wins;
+        const avg = gamesPlayed.length ? (wins / gamesPlayed.length).toFixed(3) : "0.000";
 
-// Helper function to calculate stats for a single player
-const getLeaderboardEntry = (results: GameResult[], player: string): LeaderboardEntry => {
-    const playerWins = results.filter((game) => game.winner === player).length;
+        return { name: player, wins, losses, avg };
+    }).sort((a, b) => parseFloat(b.avg) - parseFloat(a.avg));
+}
 
-    const playerGames = results.filter((game) =>
-        game.players.includes(player)
-    ).length;
+export function calculateFunFacts(gameResults: GameResult[]): FunFacts {
+    const totalGames = gameResults.length;
+    const totalReverses = gameResults.reduce((sum, game) => sum + game.reverseCount, 0);
+    const totalUnoDeclarations = gameResults.reduce(
+        (sum, game) => sum + Object.values(game.unoDeclarations).reduce((a, b) => a + b, 0),
+        0
+    );
+    const averageReversesPerGame = totalGames ? totalReverses / totalGames : 0;
+    const averageUnoDeclarationsPerGame = totalGames ? totalUnoDeclarations / totalGames : 0;
+    const highestReversesInGame = Math.max(...gameResults.map((game) => game.reverseCount), 0);
+    const highestUnoDeclarationsInGame = Math.max(
+        ...gameResults.map((game) => Object.values(game.unoDeclarations).reduce((a, b) => a + b, 0)),
+        0
+    );
 
     return {
-        wins: playerWins,
-        losses: playerGames - playerWins,
-        avg: playerGames > 0 ? (playerWins / playerGames).toFixed(3) : '0.000',
-        name: player,
+        totalGames,
+        totalReverses,
+        totalUnoDeclarations,
+        averageReversesPerGame,
+        averageUnoDeclarationsPerGame,
+        highestReversesInGame,
+        highestUnoDeclarationsInGame,
     };
-};
+}

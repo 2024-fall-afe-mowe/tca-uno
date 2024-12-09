@@ -1,76 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { createHashRouter, RouterProvider } from 'react-router-dom';
-import { Home } from './Home';
-import { Setup } from './Setup';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Play } from './Play';
 import GameResults from './GameResults';
-import { GameResult, getLeaderboard } from './game-results';
-import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
+import Home from './Home';
+import Setup from './Setup';
+import { GameResult, getLeaderboard, calculateFunFacts } from './game-results';
 
-interface Player {
-    name: string;
-    selected: boolean;
+export interface Player {
+  name: string;
+  selected: boolean;
 }
 
-const dummyGameResults: GameResult[] = [
-    {
-        startTime: '2024-09-23T15:36:25.123Z',
-        endTime: '2024-09-23T15:46:25.123Z',
-        winner: 'Chris B',
-        players: ['Chris B', 'Caden J', 'Peter B', 'Swastik A', 'Tom'],
-    },
-];
+function App() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [gameResults, setGameResults] = useState<GameResult[]>([]);
 
-const App: React.FC = () => {
-    const [gameResults, setGameResults] = useState<GameResult[]>(dummyGameResults);
-    const [currentPlayers, setCurrentPlayers] = useState<Player[]>([]);
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const addGameResult = (result: GameResult) => {
+    setGameResults((prev) => [...prev, result]);
+  };
 
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, [theme]);
+  const leaderboardData = getLeaderboard(gameResults);
+  const funFacts = calculateFunFacts(gameResults);
 
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        localStorage.setItem('theme', newTheme);
-    };
+  // Only selected players will be included in the Play screen
+  const activePlayers = players.filter(p => p.selected);
 
-    const addGameResult = (newResult: GameResult) => {
-        setGameResults([...gameResults, newResult]);
-    };
+  return (
+    <Router>
+      <div className="p-5">
+        <nav className="mb-4 space-x-4">
+          <Link to="/">Home</Link>
+          <Link to="/setup">Setup</Link>
+          <Link to="/play">Play</Link>
+          <Link to="/results">Results</Link>
+        </nav>
 
-    const myRouter = createHashRouter([
-        {
-            path: '/',
-            element: <Home leaderboardData={getLeaderboard(gameResults)} />,
-        },
-        { path: '/setup', element: <Setup setPlayersForGame={setCurrentPlayers} /> },
-        { path: '/play', element: <Play players={currentPlayers} addGameResult={addGameResult} /> },
-        { path: '/results', element: <GameResults results={gameResults} /> },
-    ]);
-
-    return (
-        <div className="App p-3 relative min-h-screen bg-base-100 text-base-content">
-            <button
-                className="absolute top-4 right-4 p-2 rounded-full focus:outline-none"
-                onClick={toggleTheme}
-                aria-label="Toggle Dark Mode"
-            >
-                {theme === 'light' ? (
-                    <MoonIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
-                ) : (
-                    <SunIcon className="w-6 h-6 text-yellow-500" />
-                )}
-            </button>
-            <RouterProvider router={myRouter} />
-        </div>
-    );
-};
+        <Routes>
+          <Route path="/" element={<Home leaderboardData={leaderboardData} funFacts={funFacts} />} />
+          <Route path="/setup" element={<Setup players={players} setPlayers={setPlayers} />} />
+          <Route path="/play" element={<Play players={activePlayers} addGameResult={addGameResult} />} />
+          <Route path="/results" element={<GameResults results={gameResults} />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
 
 export default App;

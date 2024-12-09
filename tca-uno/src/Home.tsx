@@ -1,21 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LeaderboardEntry } from './game-results';
+import { LeaderboardEntry, FunFacts } from './game-results';
 
 interface HomeProps {
     leaderboardData: LeaderboardEntry[];
+    funFacts: FunFacts;
 }
 
-export const Home: React.FC<HomeProps> = ({ leaderboardData }) => {
+export const Home: React.FC<HomeProps> = ({ leaderboardData, funFacts }) => {
     const nav = useNavigate();
 
     return (
         <div>
             <h1 className="text-2xl font-bold mb-3">Home</h1>
-            <button
-                className="btn btn-primary mb-3"
-                onClick={() => nav('/setup')}
-            >
+            <button className="btn btn-primary mb-3" onClick={() => nav('/setup')}>
                 Play
             </button>
             <div className="card bg-base-100 shadow-xl">
@@ -47,6 +45,22 @@ export const Home: React.FC<HomeProps> = ({ leaderboardData }) => {
                     )}
                 </div>
             </div>
+            <div className="card bg-base-100 shadow-xl mt-5">
+                <div className="card-body p-3">
+                    <h2 className="card-title">Fun Facts</h2>
+                    <ul>
+                        <li>Total Games Played: {funFacts.totalGames}</li>
+                        <li>Total Reverses: {funFacts.totalReverses}</li>
+                        <li>Total UNO Declarations: {funFacts.totalUnoDeclarations}</li>
+                        <li>Average Reverses per Game: {funFacts.averageReversesPerGame.toFixed(2)}</li>
+                        <li>Average UNO Declarations per Game: {funFacts.averageUnoDeclarationsPerGame.toFixed(2)}</li>
+                        <li>Highest Reverses in a Single Game: {funFacts.highestReversesInGame}</li>
+                        <li>Highest UNO Declarations in a Single Game: {funFacts.highestUnoDeclarationsInGame}</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     );
 };
+
+export default Home;
