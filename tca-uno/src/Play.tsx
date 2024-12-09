@@ -14,41 +14,44 @@ export const Play: React.FC<PlayProps> = ({ players, addGameResult }) => {
     const handleWin = (winner: string) => {
         const now = new Date().toISOString();
 
-        // Record the game result and navigate to results page
         addGameResult({
-            startTime: now, // You could replace this with actual game start time if available
+            startTime: now,
             endTime: now,
             winner,
-            players: players.map(p => p.name),
+            players: players.map((p) => p.name),
         });
 
         nav('/results');
     };
 
     const handleDidNotWin = () => {
-        // Reset UNO declaration
         setUnoDeclared(null);
+    };
+
+    const getRandomUnoColor = () => {
+        const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500'];
+        return colors[Math.floor(Math.random() * colors.length)];
     };
 
     return (
         <div>
             <h1 className="text-2xl font-bold mb-3">Play</h1>
-            <p className="mb-3">Current Players:</p>
-            <ul className="list-disc pl-5">
-                {players.map(player => (
-                    <li key={player.name} className="mb-2">
-                        {player.name}
-                        {unoDeclared === null && (
-                            <button
-                                className="btn btn-warning ml-3"
-                                onClick={() => setUnoDeclared(player.name)}
-                            >
-                                UNO!
-                            </button>
-                        )}
-                    </li>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {players.map((player) => (
+                    <div
+                        key={player.name}
+                        className={`rounded-lg p-4 shadow-lg text-white flex flex-col items-center justify-center ${getRandomUnoColor()}`}
+                    >
+                        <p className="text-xl font-bold">{player.name}</p>
+                        <button
+                            className="btn btn-primary mt-4"
+                            onClick={() => setUnoDeclared(player.name)}
+                        >
+                            UNO!
+                        </button>
+                    </div>
                 ))}
-            </ul>
+            </div>
             {unoDeclared && (
                 <div className="mt-5">
                     <p className="mb-3 text-lg">
@@ -68,3 +71,5 @@ export const Play: React.FC<PlayProps> = ({ players, addGameResult }) => {
         </div>
     );
 };
+
+export default Play;

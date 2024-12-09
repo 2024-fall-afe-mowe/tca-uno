@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GameResult } from './game-results';
 
 interface GameResultsProps {
@@ -6,6 +7,8 @@ interface GameResultsProps {
 }
 
 const GameResults: React.FC<GameResultsProps> = ({ results }) => {
+    const navigate = useNavigate();
+
     return (
         <div>
             <h2 className="text-xl font-bold mb-3">Game Results</h2>
@@ -23,6 +26,12 @@ const GameResults: React.FC<GameResultsProps> = ({ results }) => {
                     ))}
                 </ul>
             )}
+            <button
+                className="btn btn-primary mt-4"
+                onClick={() => navigate('/')}
+            >
+                Home
+            </button>
         </div>
     );
 };
