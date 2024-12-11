@@ -1,8 +1,9 @@
 import React from 'react';
-import { GameResult } from './game-results';
+import { GameResult, FunFacts } from './game-results';
 
 interface GameResultsProps {
     results: GameResult[];
+    funFacts: FunFacts;
 }
 
 const GameResults: React.FC<GameResultsProps> = ({ results }) => {

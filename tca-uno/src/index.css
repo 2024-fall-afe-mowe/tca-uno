@@ -1,4 +1,5 @@
-
+@import 'tailwindcss/tailwind.css';
+@import 'daisyui/dist/full.css';
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
