@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Player } from './App';
 import { loadGamesFromCloud } from './uno-cloud-api';
@@ -8,11 +8,12 @@ interface SetupProps {
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   setGameStartTime: (time: string) => void;
-  startGame: () => void;
+  startGame: () => void; 
 }
 
 const Setup: React.FC<SetupProps> = ({ players, setPlayers, setGameStartTime }) => {
   const navigate = useNavigate();
+  const [newPlayerName, setNewPlayerName] = useState('');
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -46,6 +47,21 @@ const Setup: React.FC<SetupProps> = ({ players, setPlayers, setGameStartTime }) 
     );
   };
 
+  const addNewPlayer = () => {
+    if (newPlayerName.trim() === '') {
+      alert('Player name cannot be empty.');
+      return;
+    }
+
+    if (players.some((player) => player.name.toLowerCase() === newPlayerName.toLowerCase())) {
+      alert('Player name already exists.');
+      return;
+    }
+
+    setPlayers((prevPlayers) => [...prevPlayers, { name: newPlayerName.trim(), selected: false }]);
+    setNewPlayerName('');
+  };
+
   const startGame = () => {
     if (players.some((p) => p.selected)) {
       setGameStartTime(new Date().toISOString());
@@ -56,12 +72,24 @@ const Setup: React.FC<SetupProps> = ({ players, setPlayers, setGameStartTime }) 
   };
 
   return (
-    <div className="p-5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    <div className="p-5">
       <h1 className="text-3xl font-bold mb-5">Setup</h1>
+      <div className="mb-5">
+        <input
+          type="text"
+          className="input input-bordered mr-3"
+          placeholder="Enter player name"
+          value={newPlayerName}
+          onChange={(e) => setNewPlayerName(e.target.value)}
+        />
+        <button className="btn btn-primary" onClick={addNewPlayer}>
+          Add Player
+        </button>
+      </div>
       {players.length === 0 ? (
         <p className="text-red-500">No players available. Please add players to start the game.</p>
       ) : (
-        <ul className="mb-5 space-y-2">
+        <ul className="mb-5">
           {players.map((p, index) => (
             <li key={index} className="flex items-center">
               <input
@@ -69,9 +97,8 @@ const Setup: React.FC<SetupProps> = ({ players, setPlayers, setGameStartTime }) 
                 id={`player-${index}`}
                 checked={p.selected}
                 onChange={() => togglePlayerSelection(index)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
-              <label htmlFor={`player-${index}`} className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              <label htmlFor={`player-${index}`} className="ml-2">
                 {p.name}
               </label>
             </li>
@@ -79,7 +106,7 @@ const Setup: React.FC<SetupProps> = ({ players, setPlayers, setGameStartTime }) 
         </ul>
       )}
       <button
-        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 disabled:bg-gray-400"
+        className="btn btn-success"
         onClick={startGame}
         disabled={players.length === 0}
       >
